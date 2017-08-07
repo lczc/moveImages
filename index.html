@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        *{
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        ul{
+            margin: 50px auto;
+            width: 500px;
+            position: relative;
+
+        }
+        ul li{
+            display:inline-block;
+            margin-left: 20px;
+            width: 102px;
+            height: 102px;
+            border: 1px dashed transparent;
+
+        }
+        ul li img{
+            width: 100px;
+            height: 100px;
+        }
+
+    </style>
+</head>
+<body>
+<ul>
+    <li><img src="imgs/2.jpg"> </li>
+    <li><img src="imgs/3.jpg"> </li>
+    <li><img src="imgs/4.jpg"> </li>
+    <li><img src="imgs/5.jpg"> </li>
+    <li><img src="imgs/2.jpg"> </li>
+    <li><img src="imgs/6.jpg"> </li>
+    <li><img src="imgs/7.jpg"> </li>
+    <li><img src="imgs/8.jpg"> </li>
+    <li><img src="imgs/9.jpg"> </li>
+    <li><img src="imgs/5.jpg"> </li>
+    <li><img src="imgs/2.jpg"> </li>
+    <li><img src="imgs/6.jpg"> </li>
+</ul>
+</body>
+<script src="my.js"></script>
+<script>
+    var aLi=document.querySelectorAll("ul li");
+    var aPos=[];         //存储li的位置
+    var Zindex=2; //图片z
+
+    //获取位置
+    for(var i=0; i<aLi.length; i++){
+        aPos[i]={left:aLi[i].offsetLeft,top:aLi[i].offsetTop}
+    }
+
+
+
+    //布局转换
+    for(var i=0; i<aLi.length; i++){
+        aLi[i].style.position="absolute";
+        aLi[i].style.left=aPos[i].left+"px";
+        aLi[i].style.top=aPos[i].top+"px";
+        aLi[i].index=i; //核心代码
+    }
+                                                                 /*
+                                                                 * 布局写好
+                                                                 * 获取当前的位置并存储起来
+                                                                 * 动态分布当前的位置
+                                                                 * 事件检测：onmousedowm ，onmousemove
+                                                                 * 碰撞检测：是否发生碰撞
+                                                                 * 碰撞发生后找到距离最小的Li
+                                                                 * 切换位置：当没有发生碰撞的时候返回原点，否则互换位置
+                                                                 *
+
+                                                                 * */
+    //拖拽 循环n次
+
+    for(var i=0; i<aLi.length; i++){
+        Drag(aLi[i]);
+    }
+
+
+    //拖拽事件   拖拽单词drag
+            function Drag(obj) {
+        obj.onmousedown=function (ev) {
+            var oEvent=ev || event;   // 兼容事件
+            Zindex++;             //一发生拖拽马上令当前的z轴变大
+            var X = oEvent.clientX - obj.offsetLeft;
+            var Y = oEvent.clientY - obj.offsetTop;    //获取当前鼠标点击的位置
+
+            document.onmousemove=function (ev) {     //拖动事件
+                var oEvent=ev || event;
+                obj.style.left= oEvent.clientX - X + "px";
+                obj.style.top= oEvent.clientY - Y + "px";     //当前的位置减去之前的位置得到拖动的距离
+                obj.style.zIndex=Zindex;                      //让图片显示在最上面
+            };
+
+            document.onmouseup=function () {     //拖动完成后放开鼠标发生事件
+                document.onmousemove=null;         //清除拖动事件
+                var oNear=findNearset(obj);        //得到拖动靠最近的li
+                if (oNear){                     //判断是否发生碰撞
+                    oNear.style.zIndex=Zindex++;  //让需要替换的LI增加，避免比先前的z小
+                    obj.style.zIndex=Zindex++;   //当前的z最大
+                    animate(obj,aPos[oNear.index]);
+                    animate(oNear,aPos[obj.index]);   //相互替换位置
+                    var tmp=0;
+                    tmp=obj.index;
+                    obj.index=oNear.index;
+                    oNear.index=tmp;               //个换位置中转代码
+                }
+                else{
+                    animate(obj,aPos[obj.index])   //若无发生碰撞则回到原点
+                }
+            };
+            clearInterval(obj.timer);  //关闭定时器
+            return false;  //拖拽事件执行完成后中止程序运行
+        };
+    }
+
+    //碰撞检测
+    function cdTest(obj1,obj2){    //obj1为当前拖拽的Li,2为发生碰撞的li
+        var l1=obj1.offsetLeft + obj1.offsetWidth;
+        var r1=obj1.offsetLeft;
+        var t1=obj1.offsetHeight + obj1.offsetTop;
+        var b1=obj1.offsetTop;                      //需要获得的属性有当前li的宽度加左边距，左边距
+                                                     //上边距加高度，上边距
+        var l2=obj2.offsetLeft + obj2.offsetWidth;
+        var r2=obj2.offsetLeft;
+        var t2=obj2.offsetHeight + obj2.offsetTop;
+        var b2=obj2.offsetTop;                       //同理
+
+        if (l2<r1 || r2>l1 || t2<b1 || b2>t1){     //判断是否发生碰撞
+            return false;  //没碰到，返回原处
+        }
+        else{
+            return true;
+        }
+    }
+
+    function Dis(obj1,obj2){                //找到发生碰撞的最近的li，勾股定理
+        var a=obj1.offsetLeft - obj2.offsetLeft;
+        var b=obj1.offsetTop - obj2.offsetTop;
+        return Math.sqrt(a*a+b*b);    //a3 b4 得到就是5
+    }
+
+
+    function findNearset(obj){      //找到最近的 并且碰到的
+        var Mim=9999999999;
+        var Mindex=-1;
+        for(var i=0; i<aLi.length; i++){
+            if (obj == aLi[i]) continue;
+            if (cdTest(obj,aLi[i])){  //碰到了
+                                            //找最值
+                var dis=Dis(obj,aLi[i]);  //最近的
+                if(Mim > dis){
+                    Mim=dis;
+                    Mindex=i;
+                }
+            }
+        }
+
+        if (Mindex == -1){
+            return null;
+        }
+        else{
+            return aLi[Mindex];
+            //打到最近的 LI
+        }
+
+    }
+
+</script>
+</html>
