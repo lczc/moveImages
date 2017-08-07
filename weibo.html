@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        ul{
+        }
+        *{margin:0;padding: 0;}
+        .box {
+            margin: 100px auto;
+            width: 600px;
+            height: auto;
+            border:1px solid #333;
+            padding: 30px 0;
+        }
+        textarea {
+            width: 450px;
+            resize: none;  /*防止用户拖动 右下角*/
+        }
+        .box li {
+            width: 450px;
+            line-height: 30px;
+            border-bottom:1px dashed #ccc;
+            margin-left: 80px;
+        }
+        .you{color: red;
+            text-align: right;
+            padding-right: 20px;
+            padding-top: 10px;
+            display: none;
+        }
+        .box li a {
+            float: right;
+        }
+    </style>
+
+
+</head>
+<body>
+<div class="box" id="box">
+    微博发布: <textarea name="" id="" cols="30" rows="10"></textarea>
+            <button>发布</button>
+            <div class="you">输入不能为空！</div>
+    <!--<ul>
+        <li>311231<a href ='javascript:;'>删除</a></li>
+    </ul>-->
+</div>
+
+<script>
+    var oBox=document.getElementById("box");//获取大盒子
+    var oBoxChild=oBox.children;//获取外部盒子的所有儿子
+
+    //创建UI
+    var oUl=document.createElement("ul");
+    oBox.appendChild(oUl);//在oBox插入Ul
+
+    oBoxChild[1].onclick=function () {
+
+        if (oBoxChild[0].value == ""){
+            oBoxChild[2].innerHTML="输入不为空";
+            oBoxChild[2].style.display="block";
+            return false;
+        }
+
+        var oLi=document.createElement("li"); //创建LI
+        oLi.innerHTML=oBoxChild[0].value+"<a href ='javascript:;' class='btn'>删除</a>";  //LI的innerHTML
+
+
+        //后输入优先显示
+        if(oUl.children.length){
+            oUl.insertBefore(oLi,oUl.children[0]);
+        }
+        else
+        {
+            oUl.appendChild(oLi)
+        };
+
+        oBoxChild[0].value = ""
+
+        //删除
+        var btn=oBox.getElementsByClassName("btn");
+        for(var i=0; i<btn.length;i++){
+            btn[i].onclick=function () {
+                oUl.removeChild(this.parentNode)//删除整个li
+                                                //<li><a href ='javascript:;' class='btn'>删除</a></li>
+            }
+        }
+
+    }
+
+</script>
+
+</body>
+</html>
